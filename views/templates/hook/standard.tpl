@@ -42,7 +42,7 @@
 		{if $paypal_mx_total_discounts == 0}
 			{foreach from=$cart->getProducts() item=paypal_mx_product name="paypal_mx_products"}
 				<input type="hidden" name="item_name_{$smarty.foreach.paypal_mx_products.index+1|escape:'htmlall':'UTF-8'}" value="{$paypal_mx_product.name|escape:'htmlall':'UTF-8'}" />
-				<input type="hidden" name="amount_{$smarty.foreach.paypal_mx_products.index+1|escape:'htmlall':'UTF-8'}" value="{$paypal_mx_product.price|floatval}" />
+				<input type="hidden" name="amount_{$smarty.foreach.paypal_mx_products.index+1|escape:'htmlall':'UTF-8'}" value="{Tools::ps_round($paypal_mx_product.price, 2)|floatval}" />
 				<input type="hidden" name="quantity_{$smarty.foreach.paypal_mx_products.index+1|escape:'htmlall':'UTF-8'}" value="{$paypal_mx_product.quantity|intval}" />
 			{/foreach}
 			{assign var="paypal_mx_total_shipping" value=$cart->getOrderTotal(true, Cart::ONLY_SHIPPING)}

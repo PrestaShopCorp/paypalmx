@@ -93,7 +93,7 @@ class paypal_mx_validation extends PayPalMX
 					$errors[] = $this->paypal_mx->l('Invalid Cart ID');
 				else
 				{
-					$context->cart = $cart;
+					$this->context->cart = $cart;
 					$currency = new Currency((int)Currency::getIdByIsoCode(Tools::getValue('mc_currency')));
 					
 					if (!Validate::isLoadedObject($currency) || $currency->id != $cart->id_currency)

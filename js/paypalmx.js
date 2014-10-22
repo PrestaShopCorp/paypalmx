@@ -23,7 +23,7 @@
  *  International Registered Trademark & Property of PrestaShop SA
  */
 
-function paypal_usa_init()
+function paypal_mx_init()
 {
 	if ($('.colorSelector').length) {
 		$('.colorSelector').each(function() {
@@ -55,46 +55,46 @@ function paypal_usa_init()
 
 	$('.fixCol').css({'height': $('.fixCol').css('height', height + 40 + 'px')});
 
-	$('.paypal-usa-threecol input:radio, .paypal-usa-onecol input:checkbox').live('click', function() {
+	$('.paypal-mx-threecol input:radio, .paypal-mx-onecol input:checkbox').live('click', function() {
 
 		if ($(this).prop('type') === 'radio')
-			$('.paypal-usa-product').removeClass('paypal-usa-product-active');
+			$('.paypal-mx-product').removeClass('paypal-mx-product-active');
 		
 		if ($(this).is(':checked')) {
-			if ($(this).is('#paypal_usa_payment_advanced, #paypal_usa_payflow_link')) 
-				$('#paypal-usa-advanced-settings').parent('form').fadeIn(500);
+			if ($(this).is('#paypal_mx_payment_advanced, #paypal_mx_payflow_link')) 
+				$('#paypal-mx-advanced-settings').parent('form').fadeIn(500);
 			
-			if ($(this).is('#paypal_usa_express_checkout')) 
-				$('#paypal_usa_express_checkout_config').fadeIn(500);
+			if ($(this).is('#paypal_mx_express_checkout')) 
+				$('#paypal_mx_express_checkout_config').fadeIn(500);
 			
-			$(this).parent().parent().addClass('paypal-usa-product-active');
+			$(this).parent().parent().addClass('paypal-mx-product-active');
 		} else {
-			if ($(this).is('#paypal_usa_payment_advanced, #paypal_usa_payflow_link')) 
-				$('#paypal-usa-advanced-settings').fadeOut(500);
+			if ($(this).is('#paypal_mx_payment_advanced, #paypal_mx_payflow_link')) 
+				$('#paypal-mx-advanced-settings').fadeOut(500);
 			
-			if ($(this).is('#paypal_usa_express_checkout')) 	
-				$('#paypal_usa_express_checkout_config').fadeOut(500);
+			if ($(this).is('#paypal_mx_express_checkout')) 	
+				$('#paypal_mx_express_checkout_config').fadeOut(500);
 			
-			$(this).parent().parent().removeClass('paypal-usa-product-active');
+			$(this).parent().parent().removeClass('paypal-mx-product-active');
 		}
-		if ($('#paypal_usa_payment_advanced, #paypal_usa_payflow_link').is(':checked'))
+		if ($('#paypal_mx_payment_advanced, #paypal_mx_payflow_link').is(':checked'))
 		{
-			$('#paypal-usa-advanced-settings').fadeIn(500);
-			$('#paypal-usa-advanced-settings').parent('form').fadeIn(500);
+			$('#paypal-mx-advanced-settings').fadeIn(500);
+			$('#paypal-mx-advanced-settings').parent('form').fadeIn(500);
 		}
 		return true;
 	});
 
 	$('fieldset input:button').live('click', function() {
-		$('input[name=paypal_usa_products]').prop('checked', false);
-		$('#paypal_usa_express_checkout').prop('checked', true);
-		$('.paypal-usa-product').removeClass('paypal-usa-product-active');
-		$('#paypal_usa_express_checkout').parent().parent().addClass('paypal-usa-product-active');
-		$('#paypal_usa_express_checkout_config').fadeIn(500);
-		$('#paypal-usa-advanced-settings').parent('form').fadeOut(500);
+		$('input[name=paypal_mx_products]').prop('checked', false);
+		$('#paypal_mx_express_checkout').prop('checked', true);
+		$('.paypal-mx-product').removeClass('paypal-mx-product-active');
+		$('#paypal_mx_express_checkout').parent().parent().addClass('paypal-mx-product-active');
+		$('#paypal_mx_express_checkout_config').fadeIn(500);
+		$('#paypal-mx-advanced-settings').parent('form').fadeOut(500);
 	});
 }
 
 $(document).ready(function(){
-	paypal_usa_init();
+	paypal_mx_init();
 });

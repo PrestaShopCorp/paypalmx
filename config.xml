@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <module>
-	<name>paypalusa</name>
-	<displayName><![CDATA[PayPal USA, Canada]]></displayName>
+	<name>paypalmx</name>
+	<displayName><![CDATA[PayPal MX, Canada]]></displayName>
 	<version><![CDATA[1.3.8]]></version>
 	<description><![CDATA[Accept payments using PayPal&#039;s Express Checkout, PayPal Payments Standard, Advanced, Pro, or Payflow.]]></description>
 	<author><![CDATA[PrestaShop]]></author>

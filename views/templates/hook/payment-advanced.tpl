@@ -15,9 +15,9 @@
 ** Step 4: Configure this Addon in the Back-office with your credentials for the PayPal Manager
 ** Step 5: On the payment page, we will display an <iframe> loading your hosted checkout page
 ** Step 6: The customer will proceed to payment inside this <iframe>
-** Step 7: The transaction success or failure is sent to you by PayPal at the following URL: http://www.mystore.com/modules/paypalusa/controllers/front/validation.php
+** Step 7: The transaction success or failure is sent to you by PayPal at the following URL: http://www.mystore.com/modules/paypalmx/controllers/front/validation.php
 ** Step 8: Customer is redirected to the Order confirmation page
 *}
 
 {* Negative margin is used to compensate the 15px margin added by PayPal inside the <iframe>, you can alter the CSS styles below if needed *}
-<iframe src="{$paypal_usa_advanced_iframe_url|escape:'htmlall':'UTF-8'}" name="paypal_advanced" scrolling="no" style="width: 570px; height: 540px; margin-left: -15px; border: none;" border="0"></iframe>
+<iframe src="{$paypal_mx_advanced_iframe_url|escape:'htmlall':'UTF-8'}" name="paypal_advanced" scrolling="no" style="width: 570px; height: 540px; margin-left: -15px; border: none;" border="0"></iframe>

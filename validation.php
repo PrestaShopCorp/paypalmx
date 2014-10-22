@@ -12,7 +12,7 @@
 *  Step 1: On the payment page/step, the customer is clicking on the PayPal button which is transmitting a form to PayPal
 *  Step 2: All the order's parameters are sent to PayPal including the billing address to pre-fill a maximum of values/fields for the customer
 *  Step 3: On PayPal, the customer can proceed to his/her payment by using his/her PayPal's credentials or by entering a new credit card
-*  Step 4: The transaction success or failure is sent to you by PayPal using the PayPalUSAValidationModuleFrontController controller (Method _paymentStandard())
+*  Step 4: The transaction success or failure is sent to you by PayPal using the PayPalMXValidationModuleFrontController controller (Method _paymentStandard())
 *  This step is also called IPN ("Instant Payment Notification")
 *  Step 5: The customer is seeing the payment confirmation on PayPal and is redirected to his/her "Order history" page ("My account" section)
 *
@@ -24,7 +24,7 @@
 *  Step 4: Configure this Addon in the Back-office with your credentials for the PayPal Manager
 *  Step 5: On the payment page, the Addon will display an <iframe> loading your hosted checkout page
 *  Step 6: The customer will proceed to payment inside this <iframe>
-*  Step 7: The transaction success or failure is sent to you by PayPal using the PayPalUSAValidationModuleFrontController controller (Method _paymentAdvanced())
+*  Step 7: The transaction success or failure is sent to you by PayPal using the PayPalMXValidationModuleFrontController controller (Method _paymentAdvanced())
 *  Step 8: The customer is redirected to the Order confirmation page
 */
 
@@ -33,23 +33,23 @@ include(dirname(__FILE__).'/../../header.php');
 
 
 
-class paypal_usa_validation extends PayPalUSA
+class paypal_mx_validation extends PayPalMX
 {
 	/**
 	* @see FrontController::initContent()
 	*/
 	public function initContent()
 	{
-		$this->paypal_usa = new PayPalUSA();
-		if ($this->paypal_usa->active)
+		$this->paypal_mx = new PayPalMX();
+		if ($this->paypal_mx->active)
 		{
 
 			/* Case 1 - This script is called by PayPal to validate an order placed using PayPal Payments Standard (IPN) */
-			if (Configuration::get('PAYPAL_USA_PAYMENT_STANDARD') && Tools::getValue('pps'))
+			if (Configuration::get('PAYPAL_MX_PAYMENT_STANDARD') && Tools::getValue('pps'))
 				$this->_paymentStandard();
 
 			/* Case 2 - This script is called by PayPal to validate an order placed using PayPal Payments Advanced (from the <iframe>) */
-			elseif ((Configuration::get('PAYPAL_USA_PAYMENT_ADVANCED') || Configuration::get('PAYPAL_USA_PAYFLOW_LINK'))&& isset($_POST['RESULT']) && Tools::getValue('TYPE') == 'S' && Tools::getValue('PNREF') != '')
+			elseif ((Configuration::get('PAYPAL_MX_PAYMENT_ADVANCED') || Configuration::get('PAYPAL_MX_PAYFLOW_LINK'))&& isset($_POST['RESULT']) && Tools::getValue('TYPE') == 'S' && Tools::getValue('PNREF') != '')
 				$this->_paymentAdvanced();
 		}
 	}
@@ -64,7 +64,7 @@ class paypal_usa_validation extends PayPalUSA
 	{
 		/* Step 1 - Double-check that the order sent by PayPal is valid one */
 		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, 'https://www.'.(Configuration::get('PAYPAL_USA_SANDBOX') ? 'sandbox.' : '').'paypal.com/cgi-bin/webscr');
+		curl_setopt($ch, CURLOPT_URL, 'https://www.'.(Configuration::get('PAYPAL_MX_SANDBOX') ? 'sandbox.' : '').'paypal.com/cgi-bin/webscr');
 		curl_setopt($ch, CURLOPT_VERBOSE, 0);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
@@ -81,7 +81,7 @@ class paypal_usa_validation extends PayPalUSA
 			$custom = explode(';', Tools::getValue('custom'));
 			
 			if (count($custom) != 2)
-				$errors[] = $this->paypal_usa->l('Invalid value for the "custom" field');
+				$errors[] = $this->paypal_mx->l('Invalid value for the "custom" field');
 			else
 			{
 				/* Step 3 - Check the shopping cart, the currency used to place the order and the amount really paid by the customer */
@@ -90,19 +90,19 @@ class paypal_usa_validation extends PayPalUSA
 				$cart = new Cart((int)$custom[0]);	
 				
 				if (!Validate::isLoadedObject($cart))
-					$errors[] = $this->paypal_usa->l('Invalid Cart ID');
+					$errors[] = $this->paypal_mx->l('Invalid Cart ID');
 				else
 				{
 					$context->cart = $cart;
 					$currency = new Currency((int)Currency::getIdByIsoCode(Tools::getValue('mc_currency')));
 					
 					if (!Validate::isLoadedObject($currency) || $currency->id != $cart->id_currency)
-						$errors[] = $this->paypal_usa->l('Invalid Currency ID').' '.($currency->id.'|'.$cart->id_currency);
+						$errors[] = $this->paypal_mx->l('Invalid Currency ID').' '.($currency->id.'|'.$cart->id_currency);
 					else
 					{
 					 /* Forcing the context currency to the order currency */
 						if (Tools::getValue('mc_gross') != $cart->getOrderTotal(true))
-							$errors[] = $this->paypal_usa->l('Invalid Amount paid');
+							$errors[] = $this->paypal_mx->l('Invalid Amount paid');
 						else
 						{
 							/* Step 4 - Determine the order status in accordance with the response from PayPal */
@@ -151,12 +151,12 @@ class paypal_usa_validation extends PayPalUSA
 								verify_sign: '.Tools::getValue('verify_sign').'
 								Mode: '.(Tools::getValue('test_ipn') ? 'Test (Sandbox)' : 'Live');	
 
-								if ($this->paypal_usa->validateOrder((int)$cart->id, (int)$order_status, (float)Tools::getValue('mc_gross'), $this->paypal_usa->displayName, $message, array(), null, false, false))
+								if ($this->paypal_mx->validateOrder((int)$cart->id, (int)$order_status, (float)Tools::getValue('mc_gross'), $this->paypal_mx->displayName, $message, array(), null, false, false))
 								{
 									/* Store transaction ID and details */
-									$this->paypal_usa->addTransactionId((int)$this->paypal_usa->currentOrder, Tools::getValue('txn_id'));
-									$this->paypal_usa->addTransaction('payment', array('source' => 'standard', 'id_shop' => 1, 'id_customer' => (int)$this->context->cart->id_customer, 'id_cart' => (int)$this->context->cart->id,
-									'id_order' => (int)$this->paypal_usa->currentOrder, 'id_transaction' => Tools::getValue('txn_id'), 'amount' => (float)Tools::getValue('mc_gross'),
+									$this->paypal_mx->addTransactionId((int)$this->paypal_mx->currentOrder, Tools::getValue('txn_id'));
+									$this->paypal_mx->addTransaction('payment', array('source' => 'standard', 'id_shop' => 1, 'id_customer' => (int)$this->context->cart->id_customer, 'id_cart' => (int)$this->context->cart->id,
+									'id_order' => (int)$this->paypal_mx->currentOrder, 'id_transaction' => Tools::getValue('txn_id'), 'amount' => (float)Tools::getValue('mc_gross'),
 									'currency' => Tools::getValue('mc_currency'), 'cc_type' => '', 'cc_exp' => '', 'cc_last_digits' => '', 'cvc_check' => 0, 'fee' => (float)Tools::getValue('mc_fee')));
 								}
 							}
@@ -180,7 +180,7 @@ class paypal_usa_validation extends PayPalUSA
 	 */
 	private function _paymentAdvanced()
 	{
-		/* Step 1 - The tokens sent by PayPal must match the ones stores in the customer cookie while displaying the <iframe> (see hookPayment() method in paypalusa.php)  */
+		/* Step 1 - The tokens sent by PayPal must match the ones stores in the customer cookie while displaying the <iframe> (see hookPayment() method in paypalmx.php)  */
 		if (isset($this->context->cookie->paypal_advanced_token)
             && Tools::getValue('SECURETOKEN') != ''
             && Tools::getValue('SECURETOKEN') == $this->context->cookie->paypal_advanced_token)
@@ -215,12 +215,12 @@ class paypal_usa_validation extends PayPalUSA
 
 			/* Step 3 - Create the order in the database */
 			$customer = new Customer((int)$this->context->cart->id_customer);
-			if ($this->paypal_usa->validateOrder((int)$this->context->cart->id, (int)$order_status, (float)Tools::getValue('AMT'), $this->paypal_usa->displayName, $message, array(), null, false, false))
+			if ($this->paypal_mx->validateOrder((int)$this->context->cart->id, (int)$order_status, (float)Tools::getValue('AMT'), $this->paypal_mx->displayName, $message, array(), null, false, false))
 			{
 				/* Store the transaction ID and details */
-				$this->paypal_usa->addTransactionId((int)$this->paypal_usa->currentOrder, Tools::getValue('PNREF'));
-				$this->paypal_usa->addTransaction('payment', array('source' => 'advanced', 'id_shop' => (int)$this->context->cart->id_shop, 'id_customer' => (int)$this->context->cart->id_customer, 'id_cart' => (int)$this->context->cart->id,
-				'id_order' => (int)$this->paypal_usa->currentOrder, 'id_transaction' => Tools::getValue('PNREF'), 'amount' => (float)Tools::getValue('AMT'),
+				$this->paypal_mx->addTransactionId((int)$this->paypal_mx->currentOrder, Tools::getValue('PNREF'));
+				$this->paypal_mx->addTransaction('payment', array('source' => 'advanced', 'id_shop' => (int)$this->context->cart->id_shop, 'id_customer' => (int)$this->context->cart->id_customer, 'id_cart' => (int)$this->context->cart->id,
+				'id_order' => (int)$this->paypal_mx->currentOrder, 'id_transaction' => Tools::getValue('PNREF'), 'amount' => (float)Tools::getValue('AMT'),
 				'currency' => $currency->iso_code, 'cc_type' => $credit_card_types[Tools::getValue('CARDTYPE')], 'cc_exp' => Tools::getValue('EXPDATE'), 'cc_last_digits' => Tools::getValue('ACCT'), 'cvc_check' => 0, 'fee' => 0));
 			}
 
@@ -230,10 +230,10 @@ class paypal_usa_validation extends PayPalUSA
 			$redirect = '';
 			/* Step 4 - Redirect the user to the order confirmation page */
 			if(version_compare(_PS_VERSION_, '1.5', '<'))
-				//$redirect = _PS_BASE_URL_.'/order-confirmation.php?id_cart='.(int)$this->context->cart->id.'&id_module='.(int)$this->paypal_usa->id.'&id_order='.(int)$this->paypal_usa->currentOrder.'&key='.$customer->secure_key;
-				$redirect = Link::getPageLink('order-confirmation.php', array('id_cart' => (int)$this->context->cart->id, 'id_module' => (int)$this->paypal_usa->id, 'id_order' => (int)$this->paypal_usa->currentOrder, 'key' => $customer->secure_key));
+				//$redirect = _PS_BASE_URL_.'/order-confirmation.php?id_cart='.(int)$this->context->cart->id.'&id_module='.(int)$this->paypal_mx->id.'&id_order='.(int)$this->paypal_mx->currentOrder.'&key='.$customer->secure_key;
+				$redirect = Link::getPageLink('order-confirmation.php', array('id_cart' => (int)$this->context->cart->id, 'id_module' => (int)$this->paypal_mx->id, 'id_order' => (int)$this->paypal_mx->currentOrder, 'key' => $customer->secure_key));
 			else
-				$redirect = _PS_BASE_URL_.'/index.php?controller=order-confirmation&id_cart='.(int)$this->context->cart->id.'&id_module='.(int)$this->paypal_usa->id.'&id_order='.(int)$this->paypal_usa->currentOrder.'&key='.$customer->secure_key;
+				$redirect = _PS_BASE_URL_.'/index.php?controller=order-confirmation&id_cart='.(int)$this->context->cart->id.'&id_module='.(int)$this->paypal_mx->id.'&id_order='.(int)$this->paypal_mx->currentOrder.'&key='.$customer->secure_key;
 
 			die('
 			<script type="text/javascript">
@@ -244,11 +244,11 @@ class paypal_usa_validation extends PayPalUSA
 		}
 		else
 		{
-			$this->context->smarty->assign('paypal_usa_error_messages', array($this->paypal_usa->l('Invalid PayPal token')));
+			$this->context->smarty->assign('paypal_mx_error_messages', array($this->paypal_mx->l('Invalid PayPal token')));
 			$this->setTemplate('errors-messages.tpl');
 		}
 	}
 }
 
-$validation = new paypal_usa_validation();
+$validation = new paypal_mx_validation();
 $validation->initContent();

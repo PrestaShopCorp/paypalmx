@@ -75,6 +75,15 @@ class PayPalMX extends PaymentModule
 		Configuration::updateValue('PAYPAL_MX_PAYMENT_ADVANCED', false);
 		Configuration::updateValue('PAYPAL_MX_EXPRESS_CHECKOUT', false);
 		Configuration::updateValue('PAYPAL_MX_PAYFLOW_LINK', false);
+		
+		if(!Configuration::get('PAYPAL_MX_API_USERNAME'))
+			Configuration::updateValue('PAYPAL_MX_API_USERNAME', '');
+		if(!Configuration::get('PAYPAL_MX_API_PASSWORD'))
+			Configuration::updateValue('PAYPAL_MX_API_PASSWORD', '');
+		if(!Configuration::get('PAYPAL_MX_API_SIGNATURE'))
+			Configuration::updateValue('PAYPAL_MX_API_SIGNATURE', '');
+		if(!Configuration::get('PAYPAL_MX_ACCOUNT'))
+			Configuration::updateValue('PAYPAL_MX_ACCOUNT', '');
 
 		return parent::install() && $this->registerHook('payment') && $this->registerHook('adminOrder') &&
 				$this->registerHook('header') && $this->registerHook('orderConfirmation') && $this->registerHook('shoppingCartExtra') &&

@@ -23,6 +23,7 @@ class PayPalMX extends PaymentModule
 		$this->author = 'PrestaShop';
 		$this->className = 'Paypalmx';
 		$this->tab = 'payments_gateways';
+		$this->bootstrap = true;
 
 		parent::__construct();
 
@@ -87,7 +88,7 @@ class PayPalMX extends PaymentModule
 
 		return parent::install() && $this->registerHook('payment') && $this->registerHook('adminOrder') &&
 				$this->registerHook('header') && $this->registerHook('orderConfirmation') && $this->registerHook('shoppingCartExtra') &&
-				$this->registerHook('productFooter') && $this->registerHook('BackOfficeHeader') && $this->_installDb();
+				$this->registerHook('productFooter') && $this->registerHook('BackOfficeHeader') && $this->registerHook('DisplayHeader') && $this->_installDb();
 	}
 
 	/**
@@ -217,13 +218,11 @@ class PayPalMX extends PaymentModule
 				'PAYPAL_MX_API_PASSWORD', 'PAYPAL_MX_API_SIGNATURE', 'PAYPAL_MX_EXP_CHK_PRODUCT', 'PAYPAL_MX_EXP_CHK_SHOPPING_CART',
 				'PAYPAL_MX_EXP_CHK_BORDER_COLOR', 'PAYPAL_MX_MANAGER_USER', 'PAYPAL_MX_MANAGER_LOGIN', 'PAYPAL_MX_MANAGER_PASSWORD',
 				'PAYPAL_MX_MANAGER_PARTNER', 'PAYPAL_MX_SANDBOX_ADVANCED')),
-			'paypal_mx_merchant_country_is_mx' => (Validate::isLoadedObject($this->_shop_country) && $this->_shop_country->iso_code == 'US'),
 			'paypal_mx_merchant_country_is_mx' => (Validate::isLoadedObject($this->_shop_country) && $this->_shop_country->iso_code == 'MX'),
 			'paypal_mx_ps_14' => (version_compare(_PS_VERSION_, '1.5', '<') ? 1 : 0),
 			'paypal_mx_b1width' => (version_compare(_PS_VERSION_, '1.5', '>') ? '350' : '300'),
 			'paypal_mx_js_files' => stripcslashes('"'._PS_JS_DIR_.'jquery/jquery-ui-1.8.10.custom.min.js","'.$this->_path.'js/colorpicker.js","'.$this->_path.'js/jquery.lightbox_me.js","'.$this->_path.'js/paypalmx.js'.'"')
 		));
-
 		return $this->display(__FILE__, 'views/templates/admin/configuration'.((Validate::isLoadedObject($this->_shop_country) && $this->_shop_country->iso_code == 'MX') ? '-mx' : '').'.tpl');
 	}
 
@@ -435,6 +434,15 @@ class PayPalMX extends PaymentModule
 		return $html;
 	}
 
+	/* PayPal MX header hook
+	 * Adds paypal-mx_frontend-overrides.css to pages
+	 *
+	 */
+	public function hookDisplayHeader()
+	{
+	  $this->context->controller->addCSS($this->_path.'css/paypal-mx_frontend-overrides.css', 'all');
+	} 
+
 	/* PayPal MX Back-office header hook
 	 * Only called in case of a refund performed by the merchant on the Order details page
 	 *
@@ -447,9 +455,11 @@ class PayPalMX extends PaymentModule
 		if (version_compare(_PS_VERSION_, '1.5', '<'))
 		{
 			$css_files = array($this->_path.'css/paypal-mx.css', $this->_path.'css/colorpicker.css');
-
+			$css = '';
+			
 			foreach($css_files as $cssfile)
-				echo '<link type="text/css" rel="stylesheet" href="'.$cssfile.'" />';
+			    $css .= '<link type="text/css" rel="stylesheet" href="'.$cssfile.'" />';
+			return $css;
 		}
 		/* Continue only if we are on the order's details page (Back-office) */
 		if (!isset($_GET['vieworder']) || !isset($_GET['id_order']))

@@ -1,0 +1,16 @@
+.pp_error ul{ margin: 0px 0 15px 30px; }
+
+.hiddenElement { display: none; }
+
+#paypal-express-checkout-form.well{ background: #FFF; border-top: 1px; margin-top:10px; text-align: right; }
+#paypal-express-checkout-btn { border:1px solid #f00; }
+
+.clearboth { clear: both; }
+
+.ecb { vertical-align: middle; margin-right: 10px; }
+.f_left { float: left; }
+
+
+#paypal_mx_advanced_iframe { width: 570px; height: 540px; margin-left: -15px; border: none; }
+
+#paypal-standard-btn { vertical-align: middle; margin-right: 10px; }

@@ -63,6 +63,6 @@
 		<input type="hidden" name="cancel_return" value="{$paypal_mx_cancel_url|escape:'htmlall':'UTF-8'}" />
 		<input type="hidden" name="no_shipping" value="1" />
 		<input type="hidden" name="bn" value="PrestashopUS_Cart" />
-		<input id="paypal-standard-btn" type="image" name="submit" src="https://www.paypalobjects.com/{if $lang_iso == 'en'}en_US{else}{if $lang_iso == 'fr'}fr_CA{else}{if $lang_iso == 'es'}es_ES{else}en_US{/if}{/if}{/if}/i/bnr/horizontal_solution_PPeCheck.gif" alt="" style="vertical-align: middle; margin-right: 10px;" /> {l s='Pay with PayPal' mod='paypalmx'}
+		<input id="paypal-standard-btn" type="image" name="submit" src="https://www.paypalobjects.com/{if $lang_iso == 'en'}en_US{else}{if $lang_iso == 'fr'}fr_CA{else}{if $lang_iso == 'es'}es_ES{else}en_US{/if}{/if}{/if}/i/bnr/horizontal_solution_PPeCheck.gif" alt="" /> {l s='Pay with PayPal' mod='paypalmx'}
 	</p>
 </form>

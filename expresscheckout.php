@@ -167,8 +167,7 @@ class paypal_mx_expresscheckout extends PayPalMX
 
 		/* We need to double-check that the token provided by PayPal is the one expected */
 		$result = $this->paypal_mx->postToPayPal('GetExpressCheckoutDetails', '&TOKEN='.urlencode(Tools::getValue('token')));
-		p($result);
-		
+
 		if ((Tools::strtoupper($result['ACK']) == 'SUCCESS' || Tools::strtoupper($result['ACK']) == 'SUCCESSWITHWARNING') && $result['TOKEN'] == Tools::getValue('token') && $result['PAYERID'] == Tools::getValue('PayerID'))
 		{
 			/* Checks if a customer already exists for this e-mail address */

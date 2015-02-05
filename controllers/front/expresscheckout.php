@@ -88,7 +88,6 @@ class PayPalmxExpressCheckoutModuleFrontController extends ModuleFrontController
 		$nvp_request = '';
 		$i = 0;
 		$totalToPay = (float)$this->context->cart->getOrderTotal(true);
-p($this->context->cart->getOrderTotal(true) - $this->context->cart->getOrderTotal());
 		$totalToPayWithoutTaxes = (float)$this->context->cart->getOrderTotal(false);
 		$total_product = 0;
 		foreach ($this->context->cart->getProducts() as $product)
@@ -205,10 +204,16 @@ p($this->context->cart->getOrderTotal(true) - $this->context->cart->getOrderTota
 			$address->id_country = (int)Country::getByIso($result['PAYMENTREQUEST_0_SHIPTOCOUNTRYCODE']);
 			$address->id_state = (int)State::getIdByIso($result['PAYMENTREQUEST_0_SHIPTOSTATE'], (int)$address->id_country);
 			$address->alias = 'PayPal';
-			$address->lastname = Tools::substr($result['PAYMENTREQUEST_0_SHIPTONAME'], 0, strpos($result['PAYMENTREQUEST_0_SHIPTONAME'], ' '));
-			$address->firstname = Tools::substr($result['PAYMENTREQUEST_0_SHIPTONAME'], strpos($result['PAYMENTREQUEST_0_SHIPTONAME'], ' '), Tools::strlen($result['PAYMENTREQUEST_0_SHIPTONAME']) - Tools::strlen($address->lastname));
+
+			$detectFirstName = Tools::substr($result['PAYMENTREQUEST_0_SHIPTONAME'], 0, strpos($result['PAYMENTREQUEST_0_SHIPTONAME'], ' '));
+			$detectLastName = Tools::substr($result['PAYMENTREQUEST_0_SHIPTONAME'], strpos($result['PAYMENTREQUEST_0_SHIPTONAME'], ' '), Tools::strlen($result['PAYMENTREQUEST_0_SHIPTONAME']) - Tools::strlen($detectFirstName));
+
+			$address->firstname = $detectFirstName;
+			if($detectLastName != '')
+				$address->lastname = $detectLastName;
+
 			$address->address1 = $result['PAYMENTREQUEST_0_SHIPTOSTREET'];
-			if ($result['PAYMENTREQUEST_0_SHIPTOSTREET2'] != '')
+			if (isset($result['PAYMENTREQUEST_0_SHIPTOSTREET2']) && $result['PAYMENTREQUEST_0_SHIPTOSTREET2'] != '')
 				$address->address2 = $result['PAYMENTREQUEST_0_SHIPTOSTREET2'];
 			$address->city = $result['PAYMENTREQUEST_0_SHIPTOCITY'];
 			$address->postcode = $result['PAYMENTREQUEST_0_SHIPTOZIP'];
@@ -289,8 +294,9 @@ p($this->context->cart->getOrderTotal(true) - $this->context->cart->getOrderTota
 						Payment type: '.$result['PAYMENTINFO_0_PAYMENTTYPE'].'
 						Order time: '.$result['PAYMENTINFO_0_ORDERTIME'].'
 						Final amount charged: '.$result['PAYMENTINFO_0_AMT'].'
-						Currency code: '.$result['PAYMENTINFO_0_CURRENCYCODE'].'
-						PayPal fees:  '.$result['PAYMENTINFO_0_FEEAMT'];
+						Currency code: '.$result['PAYMENTINFO_0_CURRENCYCODE'];
+				if(isset($result['PAYMENTINFO_0_FEEAMT']))
+					$message .= 'PayPal fees:  '.$result['PAYMENTINFO_0_FEEAMT'];
 
 				if (isset($result['PAYMENTINFO_0_EXCHANGERATE']) && !empty($result['PAYMENTINFO_0_EXCHANGERATE']))
 					$message .= 'Exchange rate: '.$result['PAYMENTINFO_0_EXCHANGERATE'].'

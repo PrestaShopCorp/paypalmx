@@ -202,7 +202,8 @@ class PayPalmxExpressCheckoutModuleFrontController extends ModuleFrontController
 			$address = new Address(isset($id_address) ? (int)$id_address : 0);
 			$address->id_customer = (int)$customer->id;
 			$address->id_country = (int)Country::getByIso($result['PAYMENTREQUEST_0_SHIPTOCOUNTRYCODE']);
-			$address->id_state = (int)State::getIdByIso($result['PAYMENTREQUEST_0_SHIPTOSTATE'], (int)$address->id_country);
+			if(isset($result['PAYMENTREQUEST_0_SHIPTOSTATE']))
+				$address->id_state = (int)State::getIdByIso($result['PAYMENTREQUEST_0_SHIPTOSTATE'], (int)$address->id_country);
 			$address->alias = 'PayPal';
 
 			$detectFirstName = Tools::substr($result['PAYMENTREQUEST_0_SHIPTONAME'], 0, strpos($result['PAYMENTREQUEST_0_SHIPTONAME'], ' '));

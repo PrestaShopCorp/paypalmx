@@ -3,7 +3,6 @@
 .hiddenElement { display: none; }
 
 #paypal-express-checkout-form.well{ background: #FFF; border-top: 1px; margin-top:10px; text-align: right; }
-#paypal-express-checkout-btn { border:1px solid #f00; }
 
 .clearboth { clear: both; }
 

@@ -248,7 +248,7 @@ class PayPalmxExpressCheckoutModuleFrontController extends ModuleFrontController
 			if (Configuration::get('PS_ORDER_PROCESS_TYPE'))
 				Tools::redirectLink($this->context->link->getPageLink('order-opc.php'));
 			else
-				Tools::redirectLink($this->context->link->getPageLink('order.php').'?step=2');
+				Tools::redirectLink($this->context->link->getPageLink('order.php').'?step=3');
 			exit;
 		}
 		else
@@ -300,14 +300,13 @@ class PayPalmxExpressCheckoutModuleFrontController extends ModuleFrontController
 					$message .= 'PayPal fees:  '.$result['PAYMENTINFO_0_FEEAMT'];
 
 				if (isset($result['PAYMENTINFO_0_EXCHANGERATE']) && !empty($result['PAYMENTINFO_0_EXCHANGERATE']))
-					$message .= 'Exchange rate: '.$result['PAYMENTINFO_0_EXCHANGERATE'].'
-				Settled amount (after conversion): '.$result['PAYMENTINFO_0_SETTLEAMT'];
+					$message .= 'Exchange rate: '.$result['PAYMENTINFO_0_EXCHANGERATE'].'Settled amount (after conversion): '.$result['PAYMENTINFO_0_SETTLEAMT'];
 
 				$pending_reasons = array(
 					'address' 			=> 'Customer did not include a confirmed shipping address and your Payment Receiving Preferences is set such that you want to manually accept or deny each of these payments.',
 					'echeck' 			=> 'The payment is pending because it was made by an eCheck that has not yet cleared.',
 					'intl' 				=> 'You hold a non-U.S. account and do not have a withdrawal mechanism. You must manually accept or deny this payment from your Account Overview.',
-					'multi-currency' 	=> 'You do not have a balance in the currency sent, and you do not have your Payment Receiving Preferences set to automatically convert and accept this payment. You must manually accept or deny this payment.',
+					'multicurrency' 	=> 'You do not have a balance in the currency sent, and you do not have your Payment Receiving Preferences set to automatically convert and accept this payment. You must manually accept or deny this payment.',
 					'verify' 			=> 'You are not yet verified, you have to verify your account before you can accept this payment.',
 					'other' 			=> 'Unknown, for more information, please contact PayPal customer service.');
 

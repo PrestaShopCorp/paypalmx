@@ -223,7 +223,7 @@ class PayPalMX extends PaymentModule
 			'paypal_mx_b1width' => (version_compare(_PS_VERSION_, '1.5', '>') ? '350' : '300'),
 			'paypal_mx_js_files' => stripcslashes('"'._PS_JS_DIR_.'jquery/jquery-ui-1.8.10.custom.min.js","'.$this->_path.'js/colorpicker.js","'.$this->_path.'js/jquery.lightbox_me.js","'.$this->_path.'js/paypalmx.js'.'"')
 		));
-		return $this->display(__FILE__, 'views/templates/admin/configuration'.((Validate::isLoadedObject($this->_shop_country) && $this->_shop_country->iso_code == 'MX') ? '-mx' : '').'.tpl');
+		return $this->display(__FILE__, 'views/templates/admin/configuration-mx.tpl');
 	}
 
 	/*

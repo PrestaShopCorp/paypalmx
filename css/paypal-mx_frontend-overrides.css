@@ -2,7 +2,19 @@
 
 .hiddenElement { display: none; }
 
-#paypal-express-checkout-form.well{ background:#fbfbfb; border: 1px solid #d6d4d4; -moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px; font-size: 17px; line-height: 23px; color: #333; font-weight: bold; margin-top:10px; padding: 10px; letter-spacing: -1px; position: relative;}
+#paypal-express-checkout-form.well{
+	background:#fbfbfb; 
+	border: 1px solid #d6d4d4; 
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	border-radius: 4px; font-size: 17px;
+	line-height: 23px;
+	color: #333;
+	font-weight: bold;
+	margin:10px 0;
+	padding: 10px;
+	letter-spacing: -1px;
+	position: relative;}
 
 #paypal-express-checkout-form.well p{
 	margin-top:13px;

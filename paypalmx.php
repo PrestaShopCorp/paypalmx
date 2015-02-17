@@ -441,7 +441,17 @@ class PayPalMX extends PaymentModule
 	public function hookDisplayHeader()
 	{
 	  $this->context->controller->addCSS($this->_path.'css/paypal-mx_frontend-overrides.css', 'all');
-	} 
+
+	  // Adds 1.5-specific styles
+		if (version_compare(_PS_VERSION_, '1.6', '<')){
+			$css_files = array($this->_path.'css/ps15styles.css');
+			$css = '';
+			
+			foreach($css_files as $cssfile)
+			    $css .= '<link type="text/css" rel="stylesheet" href="'.$cssfile.'" />';
+			return $css;
+		}
+	}
 
 	/* PayPal MX Back-office header hook
 	 * Only called in case of a refund performed by the merchant on the Order details page
@@ -451,7 +461,17 @@ class PayPalMX extends PaymentModule
 
 	public function hookBackOfficeHeader()
 	{
-		// 2013-11-8 Add 1.4 js and css support
+
+		// Adds 1.5-specific styles
+		if (version_compare(_PS_VERSION_, '1.6', '<')){
+			$css_files = array($this->_path.'css/paypal-mx.css', $this->_path.'css/colorpicker.css', $this->_path.'css/ps15styles.css');
+			$css = '';
+			
+			foreach($css_files as $cssfile)
+			    $css .= '<link type="text/css" rel="stylesheet" href="'.$cssfile.'" />';
+			return $css;
+		}
+
 		if (version_compare(_PS_VERSION_, '1.5', '<'))
 		{
 			$css_files = array($this->_path.'css/paypal-mx.css', $this->_path.'css/colorpicker.css');

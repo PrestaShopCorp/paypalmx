@@ -290,25 +290,26 @@ class PayPalmxExpressCheckoutModuleFrontController extends ModuleFrontController
 
 				/* Prepare the transaction details that will appear in the Back-office on the order details page */
 				$message =
-						'Transaction ID: '.$result['PAYMENTINFO_0_TRANSACTIONID'].'
-						Transaction type: '.$result['PAYMENTINFO_0_TRANSACTIONTYPE'].'
-						Payment type: '.$result['PAYMENTINFO_0_PAYMENTTYPE'].'
-						Order time: '.$result['PAYMENTINFO_0_ORDERTIME'].'
-						Final amount charged: '.$result['PAYMENTINFO_0_AMT'].'
-						Currency code: '.$result['PAYMENTINFO_0_CURRENCYCODE'];
+						$this->paypal_mx->l('Transaction ID: ')			.$result['PAYMENTINFO_0_TRANSACTIONID'].
+						$this->paypal_mx->l('Transaction type: ')		.$result['PAYMENTINFO_0_TRANSACTIONTYPE'].
+						$this->paypal_mx->l('Payment type: ')			.$result['PAYMENTINFO_0_PAYMENTTYPE'].
+						$this->paypal_mx->l('Order time: ')				.$result['PAYMENTINFO_0_ORDERTIME'].
+						$this->paypal_mx->l('Final amount charged: ')	.$result['PAYMENTINFO_0_AMT'].
+						$this->paypal_mx->l('Currency code: ')			.$result['PAYMENTINFO_0_CURRENCYCODE'];
 				if(isset($result['PAYMENTINFO_0_FEEAMT']))
-					$message .= 'PayPal fees:  '.$result['PAYMENTINFO_0_FEEAMT'];
+					$message .= $this->paypal_mx->l('PayPal fees:  ') 	.$result['PAYMENTINFO_0_FEEAMT'];
 
 				if (isset($result['PAYMENTINFO_0_EXCHANGERATE']) && !empty($result['PAYMENTINFO_0_EXCHANGERATE']))
-					$message .= 'Exchange rate: '.$result['PAYMENTINFO_0_EXCHANGERATE'].'Settled amount (after conversion): '.$result['PAYMENTINFO_0_SETTLEAMT'];
+					$message .= $this->paypal_mx->l('Exchange rate: ')	.$result['PAYMENTINFO_0_EXCHANGERATE'].
+								$this->paypal_mx->l('Settled amount (after conversion): ').$result['PAYMENTINFO_0_SETTLEAMT'];
 
 				$pending_reasons = array(
-					'address' 			=> 'Customer did not include a confirmed shipping address and your Payment Receiving Preferences is set such that you want to manually accept or deny each of these payments.',
-					'echeck' 			=> 'The payment is pending because it was made by an eCheck that has not yet cleared.',
-					'intl' 				=> 'You hold a non-U.S. account and do not have a withdrawal mechanism. You must manually accept or deny this payment from your Account Overview.',
-					'multicurrency' 	=> 'You do not have a balance in the currency sent, and you do not have your Payment Receiving Preferences set to automatically convert and accept this payment. You must manually accept or deny this payment.',
-					'verify' 			=> 'You are not yet verified, you have to verify your account before you can accept this payment.',
-					'other' 			=> 'Unknown, for more information, please contact PayPal customer service.');
+					'address' 			=> $this->paypal_mx->l('Customer did not include a confirmed shipping address and your Payment Receiving Preferences is set such that you want to manually accept or deny each of these payments.'),
+					'echeck' 			=> $this->paypal_mx->l('The payment is pending because it was made by an eCheck that has not yet cleared.'),
+					'intl' 				=> $this->paypal_mx->l('You hold a non-U.S. account and do not have a withdrawal mechanism. You must manually accept or deny this payment from your Account Overview.'),
+					'multicurrency' 	=> $this->paypal_mx->l('You do not have a balance in the currency sent, and you do not have your Payment Receiving Preferences set to automatically convert and accept this payment. You must manually accept or deny this payment.'),
+					'verify' 			=> $this->paypal_mx->l('You are not yet verified, you have to verify your account before you can accept this payment.'),
+					'other' 			=> $this->paypal_mx->l('Unknown, for more information, please contact PayPal customer service.'));
 
 				if (isset($result['PAYMENTINFO_0_PENDINGREASON']) && !empty($result['PAYMENTINFO_0_PENDINGREASON']) && isset($pending_reasons[$result['PAYMENTINFO_0_PENDINGREASON']]))
 					$message .= "\n".'Pending reason: '.$pending_reasons[$result['PAYMENTINFO_0_PENDINGREASON']];

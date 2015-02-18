@@ -368,6 +368,8 @@ class PayPalmxExpressCheckoutModuleFrontController extends ModuleFrontController
 					echo $this->context->smarty->fetch( dirname(__FILE__).'/views/templates/front/express-checkout-messages.tpl');
 				}
 			}
+			/* Reset the PayPal's token so the customer will be able to place a new order in the future */
+			unset($this->context->cookie->paypal_express_checkout_token, $this->context->cookie->paypal_express_checkout_payer_id);
 		}
 	}
 }

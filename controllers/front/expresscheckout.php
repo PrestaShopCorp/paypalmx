@@ -30,18 +30,13 @@ class PayPalmxExpressCheckoutModuleFrontController extends ModuleFrontController
 	 */
 	public function initContent()
 	{
-
-		/* Backward compatibility */
-		require(_PS_MODULE_DIR_.'paypalmx/backward_compatibility/backward.php');
-		$this->context->smarty->assign('base_dir', __PS_BASE_URI__);
-
 		parent::initContent();
 
 		$this->paypal_mx = new PayPalMX();
 		if ($this->paypal_mx->active && Configuration::get('PAYPAL_MX_EXPRESS_CHECKOUT') == 1)
 		{
-
 			$pp_exp = 1 * (int)Tools::getValue('pp_exp_initial') + 2 * (int)Tools::getValue('pp_exp_checkout') + 3 * (int)Tools::getValue('pp_exp_payment');
+
 			switch ($pp_exp)
 			{
 				/* Step 1 - Called the 1st time customer is clicking on the PayPal Express Checkout button */
@@ -89,51 +84,37 @@ class PayPalmxExpressCheckoutModuleFrontController extends ModuleFrontController
 		$i = 0;
 		$totalToPay = (float)$this->context->cart->getOrderTotal(true);
 		$totalToPayWithoutTaxes = (float)$this->context->cart->getOrderTotal(false);
-		$total_product = 0;
+		$total_price = 0;
+
+		$total = 0;
+
 		foreach ($this->context->cart->getProducts() as $product)
 		{
 			$nvp_request .= '&L_PAYMENTREQUEST_0_NAME'.$i.'='.urlencode($product['name']).
 					'&L_PAYMENTREQUEST_0_NUMBER'.$i.'='.urlencode((int)$product['id_product']).
 					'&L_PAYMENTREQUEST_0_DESC'.$i.'='.urlencode(strip_tags(Tools::truncate($product['description_short'], 80))).
-					'&L_PAYMENTREQUEST_0_AMT'.$i.'='.urlencode((float)$product['total']).
+					'&L_PAYMENTREQUEST_0_AMT'.$i.'='.urlencode((float)$product['price_wt']).
 					'&L_PAYMENTREQUEST_0_QTY'.$i.'='.urlencode((int)$product['cart_quantity']);
-
-			$total_product += (float)$product['total'] * (int)$product['cart_quantity'];
+					
+			$total += ((float)$product['price_wt'] * (int)$product['cart_quantity']);
+			
 			$i++;
 		}
 
-		// add 1.4 support
-		if(version_compare(_PS_VERSION_, '1.5', '>=')){
-			$cart_discount = current($this->context->cart->getCartRules(CartRule::FILTER_ACTION_REDUCTION));
-		}else{
-			$cart_discount = 0 ;
-		}
-
-		$shipping_cost = 0;
-		if(	version_compare(_PS_VERSION_, '1.5', '>=')){
-			$shipping_cost = $this->context->cart->getTotalShippingCost();
-		}else{
-			$shipping_cost = $this->context->cart->getOrderShippingCost();
-		}
-
-		if (($totalToPay - ($total_product + $shipping_cost + ($totalToPay - $totalToPayWithoutTaxes))) != 0)
-		{//discrepency in pricing must mean coupon?
-			$nvp_request .= 
-				'&L_PAYMENTREQUEST_0_NAME'.$i.'='.urlencode($this->paypal_mx->l('Coupon')).
-				'&L_PAYMENTREQUEST_0_DESC'.$i.'='.urlencode(strip_tags(Tools::truncate($cart_discount['description'], 80))).
-				'&L_PAYMENTREQUEST_0_AMT'.$i.'='.urlencode(round((float)($totalToPay - ($total_product + $shipping_cost+ ($totalToPay - $totalToPayWithoutTaxes))),2)).
-				'&L_PAYMENTREQUEST_0_QTY'.$i.'=1';
+		if ($cart_discount = $this->context->cart->getOrderTotal(false, Cart::ONLY_DISCOUNTS))
+		{
+			$nvp_request .= '&L_PAYMENTREQUEST_0_NAME'.$i.'='.urlencode($this->paypal_mx->l('Coupon')).
+					'&L_PAYMENTREQUEST_0_AMT'.$i.'='.urlencode(number_format($cart_discount,2)).
+					'&L_PAYMENTREQUEST_0_QTY'.$i.'=1';
 			$i++;
 		}
-		$nvp_request .= 
-				'&L_PAYMENTREQUEST_0_NAME'	.$i.	'='.urlencode($this->paypal_mx->l('Shipping fees')).
-				'&L_PAYMENTREQUEST_0_AMT'	.$i.	'='.urlencode((float)$shipping_cost).
-				'&L_PAYMENTREQUEST_0_QTY'	.$i.	'=1'.
-				'&PAYMENTREQUEST_0_ITEMAMT='.		(float)$totalToPayWithoutTaxes.
-				'&PAYMENTREQUEST_0_TAXAMT='	.		(float)($totalToPay - $totalToPayWithoutTaxes);
+		
+		$shipping = (float)$this->context->cart->getTotalShippingCost();
+		
+		$nvp_request .= '&PAYMENTREQUEST_0_SHIPPINGAMT='.urlencode($shipping).
+				'&PAYMENTREQUEST_0_ITEMAMT='.(float)$total;
 
-		/* Create a PayPal payment request and redirect the customer to PayPal 
-			(to log-in or to fill his/her credit card info) */
+		/* Create a PayPal payment request and redirect the customer to PayPal (to log-in or to fill his/her credit card info) */
 		$currency = new Currency((int)$this->context->cart->id_currency);
 
 		$result = $this->paypal_mx->postToPayPal('SetExpressCheckout', (Configuration::get('PAYPAL_MX_EXP_CHK_BORDER_COLOR') != '' ? '&CARTBORDERCOLOR='.Tools::substr(str_replace('#', '', Configuration::get('PAYPAL_MX_EXP_CHK_BORDER_COLOR')), 0, 6) : '').'&PAYMENTREQUEST_0_AMT='.$totalToPay.'&PAYMENTREQUEST_0_PAYMENTACTION=Sale&RETURNURL='.urlencode($this->paypal_mx->getModuleLink('paypalmx', 'expresscheckout', array('pp_exp_checkout' => 1,))).'&CANCELURL='.urlencode($this->context->link->getPageLink('order.php')).'&PAYMENTREQUEST_0_CURRENCYCODE='.urlencode($currency->iso_code).$nvp_request);
@@ -148,11 +129,7 @@ class PayPalmxExpressCheckoutModuleFrontController extends ModuleFrontController
 				$result[$key] = urldecode($val);
 
 			$this->context->smarty->assign('paypal_mx_errors', $result);
-			if(	version_compare(_PS_VERSION_, '1.5', '>=')){
-				$this->setTemplate('express-checkout-messages.tpl');
-			}else{
-				echo $this->context->smarty->fetch( dirname(__FILE__).'/views/templates/front/express-checkout-messages.tpl');
-			}
+			$this->setTemplate('express-checkout-messages.tpl');
 		}
 	}
 
@@ -164,11 +141,8 @@ class PayPalmxExpressCheckoutModuleFrontController extends ModuleFrontController
 	 */
 	private function _expressCheckout()
 	{
-
-
 		/* We need to double-check that the token provided by PayPal is the one expected */
 		$result = $this->paypal_mx->postToPayPal('GetExpressCheckoutDetails', '&TOKEN='.urlencode(Tools::getValue('token')));
-
 		if ((Tools::strtoupper($result['ACK']) == 'SUCCESS' || Tools::strtoupper($result['ACK']) == 'SUCCESSWITHWARNING') && $result['TOKEN'] == Tools::getValue('token') && $result['PAYERID'] == Tools::getValue('PayerID'))
 		{
 			/* Checks if a customer already exists for this e-mail address */
@@ -202,28 +176,16 @@ class PayPalmxExpressCheckoutModuleFrontController extends ModuleFrontController
 			$address = new Address(isset($id_address) ? (int)$id_address : 0);
 			$address->id_customer = (int)$customer->id;
 			$address->id_country = (int)Country::getByIso($result['PAYMENTREQUEST_0_SHIPTOCOUNTRYCODE']);
-			if(isset($result['PAYMENTREQUEST_0_SHIPTOSTATE']))
-				$address->id_state = (int)State::getIdByIso($result['PAYMENTREQUEST_0_SHIPTOSTATE'], (int)$address->id_country);
+			$address->id_state = (int)State::getIdByIso($result['PAYMENTREQUEST_0_SHIPTOSTATE'], (int)$address->id_country);
 			$address->alias = 'PayPal';
-
-			$detectFirstName = Tools::substr($result['PAYMENTREQUEST_0_SHIPTONAME'], 0, strpos($result['PAYMENTREQUEST_0_SHIPTONAME'], ' '));
-			$detectLastName = Tools::substr($result['PAYMENTREQUEST_0_SHIPTONAME'], strpos($result['PAYMENTREQUEST_0_SHIPTONAME'], ' '), Tools::strlen($result['PAYMENTREQUEST_0_SHIPTONAME']) - Tools::strlen($detectFirstName));
-
-			$address->firstname = $detectFirstName;
-			if($detectLastName != '')
-				$address->lastname = $detectLastName;
-
+			$address->lastname = Tools::substr($result['PAYMENTREQUEST_0_SHIPTONAME'], 0, strpos($result['PAYMENTREQUEST_0_SHIPTONAME'], ' '));
+			$address->firstname = Tools::substr($result['PAYMENTREQUEST_0_SHIPTONAME'], strpos($result['PAYMENTREQUEST_0_SHIPTONAME'], ' '), Tools::strlen($result['PAYMENTREQUEST_0_SHIPTONAME']) - Tools::strlen($address->lastname));
 			$address->address1 = $result['PAYMENTREQUEST_0_SHIPTOSTREET'];
-			if (isset($result['PAYMENTREQUEST_0_SHIPTOSTREET2']) && $result['PAYMENTREQUEST_0_SHIPTOSTREET2'] != '')
+			if ($result['PAYMENTREQUEST_0_SHIPTOSTREET2'] != '')
 				$address->address2 = $result['PAYMENTREQUEST_0_SHIPTOSTREET2'];
 			$address->city = $result['PAYMENTREQUEST_0_SHIPTOCITY'];
 			$address->postcode = $result['PAYMENTREQUEST_0_SHIPTOZIP'];
 			$address->save();
-
-			/* Update the cart billing and delivery addresses */
-			$this->context->cart->id_address_delivery = (int)$address->id;
-			$this->context->cart->id_address_invoice = (int)$address->id;
-			$this->context->cart->update();
 
 			/* Update the customer cookie to simulate a logged-in session */
 			$this->context->cookie->id_customer = (int)$customer->id;
@@ -233,7 +195,13 @@ class PayPalmxExpressCheckoutModuleFrontController extends ModuleFrontController
 			$this->context->cookie->email = $customer->email;
 			$this->context->cookie->is_guest = $customer->isGuest();
 			$this->context->cookie->logged = 1;
-
+			
+			/* Update the cart billing and delivery addresses */
+			$this->context->cart->id_address_delivery = (int)$address->id;
+			$this->context->cart->id_address_invoice = (int)$address->id;
+			$this->context->cart->secure_key = $customer->secure_key;
+			$this->context->cart->update();
+			
 			/* Save the Payer ID and Checkout token for later use (during the payment step/page) */
 			$this->context->cookie->paypal_express_checkout_token = $result['TOKEN'];
 			$this->context->cookie->paypal_express_checkout_payer_id = $result['PAYERID'];
@@ -244,11 +212,7 @@ class PayPalmxExpressCheckoutModuleFrontController extends ModuleFrontController
 				Hook::exec('authentication');
 
 			/* Redirect the use to the "Shipping" step/page of the order process */
-			//d($this->context->link->getPageLink('order.php'));
-			if (Configuration::get('PS_ORDER_PROCESS_TYPE'))
-				Tools::redirectLink($this->context->link->getPageLink('order-opc.php'));
-			else
-				Tools::redirectLink($this->context->link->getPageLink('order.php').'?step=3');
+			Tools::redirectLink($this->context->link->getPageLink('order.php', false, null, array('step' => '3')));
 			exit;
 		}
 		else
@@ -256,11 +220,8 @@ class PayPalmxExpressCheckoutModuleFrontController extends ModuleFrontController
 			foreach ($result as $key => $val)
 				$result[$key] = urldecode($val);
 
-			if(	version_compare(_PS_VERSION_, '1.5', '>=')){
-				$this->setTemplate('express-checkout-messages.tpl');
-			}else{
-				echo $this->context->smarty->fetch( dirname(__FILE__).'/views/templates/front/express-checkout-messages.tpl');
-			}
+			$this->context->smarty->assign('paypal_mx_errors', $result);
+			$this->setTemplate('express-checkout-messages.tpl');
 		}
 	}
 
@@ -277,7 +238,6 @@ class PayPalmxExpressCheckoutModuleFrontController extends ModuleFrontController
 			/* Confirm the payment to PayPal */
 			$currency = new Currency((int)$this->context->cart->id_currency);
 			$result = $this->paypal_mx->postToPayPal('DoExpressCheckoutPayment', '&TOKEN='.urlencode($this->context->cookie->paypal_express_checkout_token).'&PAYERID='.urlencode($this->context->cookie->paypal_express_checkout_payer_id).'&PAYMENTREQUEST_0_PAYMENTACTION=Sale&PAYMENTREQUEST_0_AMT='.$this->context->cart->getOrderTotal(true).'&PAYMENTREQUEST_0_CURRENCYCODE='.urlencode($currency->iso_code).'&IPADDRESS='.urlencode($_SERVER['SERVER_NAME']));
-
 			if (Tools::strtoupper($result['ACK']) == 'SUCCESS' || Tools::strtoupper($result['ACK']) == 'SUCCESSWITHWARNING')
 			{
 				/* Prepare the order status, in accordance with the response from PayPal */
@@ -290,32 +250,32 @@ class PayPalmxExpressCheckoutModuleFrontController extends ModuleFrontController
 
 				/* Prepare the transaction details that will appear in the Back-office on the order details page */
 				$message =
-						$this->paypal_mx->l('Transaction ID: ')			.$result['PAYMENTINFO_0_TRANSACTIONID'].
-						$this->paypal_mx->l('Transaction type: ')		.$result['PAYMENTINFO_0_TRANSACTIONTYPE'].
-						$this->paypal_mx->l('Payment type: ')			.$result['PAYMENTINFO_0_PAYMENTTYPE'].
-						$this->paypal_mx->l('Order time: ')				.$result['PAYMENTINFO_0_ORDERTIME'].
-						$this->paypal_mx->l('Final amount charged: ')	.$result['PAYMENTINFO_0_AMT'].
-						$this->paypal_mx->l('Currency code: ')			.$result['PAYMENTINFO_0_CURRENCYCODE'];
-				if(isset($result['PAYMENTINFO_0_FEEAMT']))
-					$message .= $this->paypal_mx->l('PayPal fees:  ') 	.$result['PAYMENTINFO_0_FEEAMT'];
+						'Transaction ID: '.$result['PAYMENTINFO_0_TRANSACTIONID'].'
+				Transaction type: '.$result['PAYMENTINFO_0_TRANSACTIONTYPE'].'
+				Payment type: '.$result['PAYMENTINFO_0_PAYMENTTYPE'].'
+				Order time: '.$result['PAYMENTINFO_0_ORDERTIME'].'
+				Final amount charged: '.$result['PAYMENTINFO_0_AMT'].'
+				Currency code: '.$result['PAYMENTINFO_0_CURRENCYCODE'].'
+				PayPal fees:  '.$result['PAYMENTINFO_0_FEEAMT'];
 
 				if (isset($result['PAYMENTINFO_0_EXCHANGERATE']) && !empty($result['PAYMENTINFO_0_EXCHANGERATE']))
-					$message .= $this->paypal_mx->l('Exchange rate: ')	.$result['PAYMENTINFO_0_EXCHANGERATE'].
-								$this->paypal_mx->l('Settled amount (after conversion): ').$result['PAYMENTINFO_0_SETTLEAMT'];
+					$message .= 'Exchange rate: '.$result['PAYMENTINFO_0_EXCHANGERATE'].'
+				Settled amount (after conversion): '.$result['PAYMENTINFO_0_SETTLEAMT'];
 
 				$pending_reasons = array(
-					'address' 			=> $this->paypal_mx->l('Customer did not include a confirmed shipping address and your Payment Receiving Preferences is set such that you want to manually accept or deny each of these payments.'),
-					'echeck' 			=> $this->paypal_mx->l('The payment is pending because it was made by an eCheck that has not yet cleared.'),
-					'intl' 				=> $this->paypal_mx->l('You hold a non-U.S. account and do not have a withdrawal mechanism. You must manually accept or deny this payment from your Account Overview.'),
-					'multicurrency' 	=> $this->paypal_mx->l('You do not have a balance in the currency sent, and you do not have your Payment Receiving Preferences set to automatically convert and accept this payment. You must manually accept or deny this payment.'),
-					'verify' 			=> $this->paypal_mx->l('You are not yet verified, you have to verify your account before you can accept this payment.'),
-					'other' 			=> $this->paypal_mx->l('Unknown, for more information, please contact PayPal customer service.'));
+					'address' => 'Customer did not include a confirmed shipping address and your Payment Receiving Preferences is set such that you want to manually accept or deny each of these payments.',
+					'echeck' => 'The payment is pending because it was made by an eCheck that has not yet cleared.',
+					'intl' => 'You hold a non-U.S. account and do not have a withdrawal mechanism. You must manually accept or deny this payment from your Account Overview.',
+					'multi-currency' => 'You do not have a balance in the currency sent, and you do not have your Payment Receiving Preferences set to automatically convert and accept this payment. You must manually accept or deny this payment.',
+					'verify' => 'You are not yet verified, you have to verify your account before you can accept this payment.',
+					'other' => 'Unknown, for more information, please contact PayPal customer service.');
 
 				if (isset($result['PAYMENTINFO_0_PENDINGREASON']) && !empty($result['PAYMENTINFO_0_PENDINGREASON']) && isset($pending_reasons[$result['PAYMENTINFO_0_PENDINGREASON']]))
 					$message .= "\n".'Pending reason: '.$pending_reasons[$result['PAYMENTINFO_0_PENDINGREASON']];
 
 				/* Creating the order */
 				$customer = new Customer((int)$this->context->cart->id_customer);
+
 				if ($this->paypal_mx->validateOrder((int)$this->context->cart->id, (int)$order_status, (float)$result['PAYMENTINFO_0_AMT'], $this->paypal_mx->displayName, $message, array(), null, false, $customer->secure_key))
 				{
 					/* Store transaction ID and details */
@@ -332,7 +292,7 @@ class PayPalmxExpressCheckoutModuleFrontController extends ModuleFrontController
 					throw new Exception();
 
 				/* Redirect the customer to the Order confirmation page */
-				if (version_compare(_PS_VERSION_, '1.5', '<'))
+				if (version_compare(_PS_VERSION_, '1.4', '<'))
 					Tools::redirect('order-confirmation.php?id_cart='.(int)$this->context->cart->id.'&id_module='.(int)$this->paypal_mx->id.'&id_order='.(int)$this->paypal_mx->currentOrder.'&key='.$customer->secure_key);
 				else
 					Tools::redirect('index.php?controller=order-confirmation&id_cart='.(int)$this->context->cart->id.'&id_module='.(int)$this->paypal_mx->id.'&id_order='.(int)$this->paypal_mx->currentOrder.'&key='.$customer->secure_key);
@@ -356,20 +316,12 @@ class PayPalmxExpressCheckoutModuleFrontController extends ModuleFrontController
 				if (isset($result['L_ERRORCODE0']) && (int)$result['L_ERRORCODE0'] == 10486)
 				{
 					unset($this->context->cookie->paypal_express_checkout_token, $this->context->cookie->paypal_express_checkout_payer_id);
-					$this->context->smarty->assign('paypal_mx_action', $this->paypal_mx->getModuleLink('paypalmx', 'expresscheckout', array('pp_exp_checkout' => 1,)));
+					$this->context->smarty->assign('paypal_mx_action', $this->paypal_mx->getModuleLink('paypalmx', 'expresscheckout', array('pp_exp_initial' => 1)));
 				}
 
 				$this->context->smarty->assign('paypal_mx_errors', $result);
-
-				if(	version_compare(_PS_VERSION_, '1.5', '>=')){
-					$this->setTemplate('express-checkout-messages.tpl');
-				}else{
-
-					echo $this->context->smarty->fetch( dirname(__FILE__).'/views/templates/front/express-checkout-messages.tpl');
-				}
+				$this->setTemplate('express-checkout-messages.tpl');
 			}
-			/* Reset the PayPal's token so the customer will be able to place a new order in the future */
-			unset($this->context->cookie->paypal_express_checkout_token, $this->context->cookie->paypal_express_checkout_payer_id);
 		}
 	}
 }

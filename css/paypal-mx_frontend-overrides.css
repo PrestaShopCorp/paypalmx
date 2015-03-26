@@ -1,25 +1,10 @@
 .pp_error ul{ margin: 0px 0 15px 30px; }
 
 .hiddenElement { display: none; }
-.align_right{ text-align: right;}
 
-#paypal-express-checkout-form.well{
-	background:#fbfbfb; 
-	border: 1px solid #d6d4d4; 
-	-moz-border-radius: 4px;
-	-webkit-border-radius: 4px;
-	border-radius: 4px; font-size: 17px;
-	line-height: 23px;
-	color: #333;
-	font-weight: bold;
-	margin:10px 0;
-	padding: 10px;
-	letter-spacing: -1px;
-	position: relative;}
+#paypal-express-checkout-form.well{ background: #FFF; border-top: 1px; margin-top:10px; text-align: right; }
+#paypal-express-checkout-btn { border:1px solid #f00; }
 
-#paypal-express-checkout-form.well p{
-	margin-top:13px;
-}
 .clearboth { clear: both; }
 
 .ecb { vertical-align: middle; margin-right: 10px; }
@@ -29,4 +14,3 @@
 #paypal_mx_advanced_iframe { width: 570px; height: 540px; margin-left: -15px; border: none; }
 
 #paypal-standard-btn { vertical-align: middle; margin-right: 10px; }
-#paypal-express-checkout-btn{ float:left;}

@@ -129,17 +129,14 @@
 					<input class="colorSelector form-control" type="text" id="paypal_mx_checkbox_border_color" name="paypal_mx_checkbox_border_color" value="{$paypal_mx_configuration.PAYPAL_MX_EXP_CHK_BORDER_COLOR|escape:'htmlall':'UTF-8'}" />
 				</div>
 			</div>
-
 			<div class="form-group">
-				<label class="col-sm-3 control-label"></label>
 				<div class="col-sm-4 col-sm-offset-3">
 					<span class="small"><sup class="warn">*</sup> {l s='Required fields' mod='paypalmx'}</span>
 				</div>
 			</div>
 
 			<div class="form-group">
-				<label class="col-sm-3 control-label"></label>
-				<div class="col-sm-4 ">
+				<div class="col-sm-4 col-sm-offset-3">
 					<input type="submit" name="SubmitBasicSettings" class="btn btn-primary" value="{l s='Save settings' mod='paypalmx'}" />
 				</div>
 			</div>

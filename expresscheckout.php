@@ -364,7 +364,6 @@ class paypal_mx_expresscheckout extends PayPalMX
 
 }
 
-
 $validation = new paypal_mx_expresscheckout();
 $validation->initContent();
 

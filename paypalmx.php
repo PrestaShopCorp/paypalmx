@@ -462,18 +462,8 @@ class PayPalMX extends PaymentModule
 	public function hookBackOfficeHeader()
 	{
 
-		// Adds 1.5-specific styles
+		// Adds 1.5 js and css support
 		if (version_compare(_PS_VERSION_, '1.6', '<')){
-			$css_files = array($this->_path.'css/paypal-mx.css', $this->_path.'css/colorpicker.css', $this->_path.'css/ps15styles.css');
-			$css = '';
-			
-			foreach($css_files as $cssfile)
-			    $css .= '<link type="text/css" rel="stylesheet" href="'.$cssfile.'" />';
-			return $css;
-		}
-
-		if (version_compare(_PS_VERSION_, '1.5', '<'))
-		{
 			$css_files = array($this->_path.'css/paypal-mx.css', $this->_path.'css/colorpicker.css');
 			$css = '';
 			
@@ -481,6 +471,7 @@ class PayPalMX extends PaymentModule
 			    $css .= '<link type="text/css" rel="stylesheet" href="'.$cssfile.'" />';
 			return $css;
 		}
+
 		/* Continue only if we are on the order's details page (Back-office) */
 		if (!isset($_GET['vieworder']) || !isset($_GET['id_order']))
 			return;

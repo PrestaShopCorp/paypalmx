@@ -22,6 +22,7 @@
  * Step 8: The customer is redirected to the Order confirmation page
  */
 
+
 class PayPalmxExpressCheckoutModuleFrontController extends ModuleFrontController
 {
 

@@ -223,7 +223,7 @@ class PayPalMX extends PaymentModule
 			'paypal_mx_b1width' => (version_compare(_PS_VERSION_, '1.5', '>') ? '350' : '300'),
 			'paypal_mx_js_files' => stripcslashes('"'._PS_JS_DIR_.'jquery/jquery-ui-1.8.10.custom.min.js","'.$this->_path.'js/colorpicker.js","'.$this->_path.'js/jquery.lightbox_me.js","'.$this->_path.'js/paypalmx.js'.'"')
 		));
-		return $this->display(__FILE__, 'views/templates/admin/configuration'.((Validate::isLoadedObject($this->_shop_country) && $this->_shop_country->iso_code == 'MX') ? '-mx' : '').'.tpl');
+		return $this->display(__FILE__, 'views/templates/admin/configuration-mx.tpl');
 	}
 
 	/*
@@ -441,7 +441,17 @@ class PayPalMX extends PaymentModule
 	public function hookDisplayHeader()
 	{
 	  $this->context->controller->addCSS($this->_path.'css/paypal-mx_frontend-overrides.css', 'all');
-	} 
+
+	  // Adds 1.5-specific styles
+		if (version_compare(_PS_VERSION_, '1.6', '<')){
+			$css_files = array($this->_path.'css/ps15styles.css');
+			$css = '';
+			
+			foreach($css_files as $cssfile)
+			    $css .= '<link type="text/css" rel="stylesheet" href="'.$cssfile.'" />';
+			return $css;
+		}
+	}
 
 	/* PayPal MX Back-office header hook
 	 * Only called in case of a refund performed by the merchant on the Order details page
@@ -451,9 +461,9 @@ class PayPalMX extends PaymentModule
 
 	public function hookBackOfficeHeader()
 	{
-		// 2013-11-8 Add 1.4 js and css support
-		if (version_compare(_PS_VERSION_, '1.5', '<'))
-		{
+
+		// Adds 1.5 js and css support
+		if (version_compare(_PS_VERSION_, '1.6', '<')){
 			$css_files = array($this->_path.'css/paypal-mx.css', $this->_path.'css/colorpicker.css');
 			$css = '';
 			
@@ -461,6 +471,7 @@ class PayPalMX extends PaymentModule
 			    $css .= '<link type="text/css" rel="stylesheet" href="'.$cssfile.'" />';
 			return $css;
 		}
+
 		/* Continue only if we are on the order's details page (Back-office) */
 		if (!isset($_GET['vieworder']) || !isset($_GET['id_order']))
 			return;

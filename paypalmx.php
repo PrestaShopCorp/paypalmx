@@ -442,7 +442,7 @@ class PayPalMX extends PaymentModule
 	{
 	  $this->context->controller->addCSS($this->_path.'css/paypal-mx_frontend-overrides.css', 'all');
 
-	  // Adds 1.5-specific styles
+	  // Adds 1.5 styles
 		if (version_compare(_PS_VERSION_, '1.6', '<')){
 			$css_files = array($this->_path.'css/ps15styles.css');
 			$css = '';

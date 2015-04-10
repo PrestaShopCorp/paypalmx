@@ -444,12 +444,7 @@ class PayPalMX extends PaymentModule
 
 	  // Adds 1.5 styles
 		if (version_compare(_PS_VERSION_, '1.6', '<')){
-			$css_files = array($this->_path.'css/ps15styles.css');
-			$css = '';
-			
-			foreach($css_files as $cssfile)
-			    $css .= '<link type="text/css" rel="stylesheet" href="'.$cssfile.'" />';
-			return $css;
+			$this->context->controller->addCSS($this->_path.'css/ps15styles.css', 'all');
 		}
 	}
 

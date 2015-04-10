@@ -1,0 +1,7 @@
+.form-horizontal .form-group{ margin-top:10px;}
+
+#content .alert-success{ color: #3c763d; background-color: #dff0d8; border-color: #d6e9c6; }
+
+#paypal-express-checkout-form.well{ text-align: left; }
+
+#content .form-group .small .warn{ background:none; border:0; padding: 0px;}

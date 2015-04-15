@@ -19,7 +19,7 @@ class PayPalMX extends PaymentModule
 	public function __construct()
 	{
 		$this->name = 'paypalmx';
-		$this->version = '1.3.8';
+		$this->version = '1.3.9';
 		$this->author = 'PrestaShop';
 		$this->className = 'Paypalmx';
 		$this->tab = 'payments_gateways';

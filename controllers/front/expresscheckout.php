@@ -94,30 +94,30 @@ class PayPalmxExpressCheckoutModuleFrontController extends ModuleFrontController
 			$nvp_request .= '&L_PAYMENTREQUEST_0_NAME'.$i.'='.urlencode($product['name']).
 					'&L_PAYMENTREQUEST_0_NUMBER'.$i.'='.urlencode((int)$product['id_product']).
 					'&L_PAYMENTREQUEST_0_DESC'.$i.'='.urlencode(strip_tags(Tools::truncate($product['description_short'], 80))).
-					'&L_PAYMENTREQUEST_0_AMT'.$i.'='.urlencode((float)$product['price_wt']).
+					'&L_PAYMENTREQUEST_0_AMT'.$i.'='.urlencode(number_format($product['price_wt'],2)).
 					'&L_PAYMENTREQUEST_0_QTY'.$i.'='.urlencode((int)$product['cart_quantity']);
 					
 			$total += ((float)$product['price_wt'] * (int)$product['cart_quantity']);
 			
 			$i++;
 		}
+		$shipping = (float)$this->context->cart->getTotalShippingCost();
+		$cupon = - $total + $totalToPay - $shipping;
 
 		if ($cart_discount = $this->context->cart->getOrderTotal(false, Cart::ONLY_DISCOUNTS))
 		{
-			$nvp_request .= '&L_PAYMENTREQUEST_0_NAME'.$i.'='.urlencode($this->paypal_mx->l('Coupon')).
-					'&L_PAYMENTREQUEST_0_AMT'.$i.'='.urlencode(number_format($cart_discount,2)).
+			$nvp_request .= '&L_PAYMENTREQUEST_0_NAME'.$i.'='.urlencode($this->paypal_mx->l('Cupón')).
+					'&L_PAYMENTREQUEST_0_AMT'.$i.'='.urlencode(number_format($cupon,2)).
 					'&L_PAYMENTREQUEST_0_QTY'.$i.'=1';
 			$i++;
 		}
-		
-		$shipping = (float)$this->context->cart->getTotalShippingCost();
-		
+	
+		//die($nvp_request);
 		$nvp_request .= '&PAYMENTREQUEST_0_SHIPPINGAMT='.urlencode($shipping).
-				'&PAYMENTREQUEST_0_ITEMAMT='.(float)$total;
+				'&PAYMENTREQUEST_0_ITEMAMT='.(float)($total + $cupon);
 
 		/* Create a PayPal payment request and redirect the customer to PayPal (to log-in or to fill his/her credit card info) */
 		$currency = new Currency((int)$this->context->cart->id_currency);
-
 		$result = $this->paypal_mx->postToPayPal('SetExpressCheckout', (Configuration::get('PAYPAL_MX_EXP_CHK_BORDER_COLOR') != '' ? '&CARTBORDERCOLOR='.Tools::substr(str_replace('#', '', Configuration::get('PAYPAL_MX_EXP_CHK_BORDER_COLOR')), 0, 6) : '').'&PAYMENTREQUEST_0_AMT='.$totalToPay.'&PAYMENTREQUEST_0_PAYMENTACTION=Sale&RETURNURL='.urlencode($this->paypal_mx->getModuleLink('paypalmx', 'expresscheckout', array('pp_exp_checkout' => 1,))).'&CANCELURL='.urlencode($this->context->link->getPageLink('order.php')).'&PAYMENTREQUEST_0_CURRENCYCODE='.urlencode($currency->iso_code).$nvp_request);
 		if (Tools::strtoupper($result['ACK']) == 'SUCCESS' || Tools::strtoupper($result['ACK']) == 'SUCCESSWITHWARNING')
 		{

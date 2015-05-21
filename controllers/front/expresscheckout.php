@@ -112,7 +112,7 @@ class PayPalmxExpressCheckoutModuleFrontController extends ModuleFrontController
 			$i++;
 		}
 	
-		//die($nvp_request);
+
 		$nvp_request .= '&PAYMENTREQUEST_0_SHIPPINGAMT='.urlencode($shipping).
 				'&PAYMENTREQUEST_0_ITEMAMT='.(float)($total + $cupon);
 

@@ -91,30 +91,31 @@ class PayPalmxExpressCheckoutModuleFrontController extends ModuleFrontController
 
 		foreach ($this->context->cart->getProducts() as $product)
 		{
+			$productrounded = round($product['price_wt'],2);
 			$nvp_request .= '&L_PAYMENTREQUEST_0_NAME'.$i.'='.urlencode($product['name']).
 					'&L_PAYMENTREQUEST_0_NUMBER'.$i.'='.urlencode((int)$product['id_product']).
 					'&L_PAYMENTREQUEST_0_DESC'.$i.'='.urlencode(strip_tags(Tools::truncate($product['description_short'], 80))).
-					'&L_PAYMENTREQUEST_0_AMT'.$i.'='.urlencode(number_format($product['price_wt'],2)).
+					'&L_PAYMENTREQUEST_0_AMT'.$i.'='.urlencode((float)$productrounded).
 					'&L_PAYMENTREQUEST_0_QTY'.$i.'='.urlencode((int)$product['cart_quantity']);
 					
-			$total += ((float)$product['price_wt'] * (int)$product['cart_quantity']);
-			
+			$total += ((float)$productrounded * (int)$product['cart_quantity']);
 			$i++;
 		}
 		$shipping = (float)$this->context->cart->getTotalShippingCost();
 		$cupon = - $total + $totalToPay - $shipping;
+		$cuponrounded = round($cupon,2);
 
 		if ($cart_discount = $this->context->cart->getOrderTotal(false, Cart::ONLY_DISCOUNTS))
 		{
-			$nvp_request .= '&L_PAYMENTREQUEST_0_NAME'.$i.'='.urlencode($this->paypal_mx->l('Cupón')).
-					'&L_PAYMENTREQUEST_0_AMT'.$i.'='.urlencode(number_format($cupon,2)).
+			$nvp_request .= '&L_PAYMENTREQUEST_0_NAME'.$i.'='.urlencode($this->paypal_mx->l('Coupon')).
+					'&L_PAYMENTREQUEST_0_AMT'.$i.'='.urlencode((float)$cuponrounded).
 					'&L_PAYMENTREQUEST_0_QTY'.$i.'=1';
 			$i++;
-		}
-	
+			
+				}
 
-		$nvp_request .= '&PAYMENTREQUEST_0_SHIPPINGAMT='.urlencode($shipping).
-				'&PAYMENTREQUEST_0_ITEMAMT='.(float)($total + $cupon);
+				$nvp_request .= '&PAYMENTREQUEST_0_SHIPPINGAMT='.urlencode($shipping).
+				'&PAYMENTREQUEST_0_ITEMAMT='.(float)($total + $cuponrounded);
 
 		/* Create a PayPal payment request and redirect the customer to PayPal (to log-in or to fill his/her credit card info) */
 		$currency = new Currency((int)$this->context->cart->id_currency);
